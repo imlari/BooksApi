@@ -1,44 +1,43 @@
+using BooksAPI.Data;
+using BooksAPI.Models;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Adicionar serviços ao contêiner.
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Criar rota para listagem de livros
+app.MapGet("/api/books", async (AppDbContext db) => {
+    var books = await db.Books.ToListAsync();
+    return Results.Ok(books);
+});
 
-app.UseHttpsRedirection();
+// Criar rota para realizar um envio de novos livros
+app.MapPost("/api/books", async (AppDbContext db, Book book) => {
+    db.Books.Add(book);
+    await db.SaveChangesAsync();
+    return Results.Created("Created", book);
+});
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+//Criar rota para retornar um livro específico
+app.MapGet("/api/books/{id}", (int id) => {
+    return Results.Ok($"Você está na rota de retorno do livro de id {id}");
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+});
+
+//Criar rota para atualizar um livro específico
+app.MapPut("/api/books/{id}", (int id) => {
+    return Results.Ok($"Você está na rota de atualização do livro de id {id}");
+});
+
+//Criar rota para deletar um livro específico
+app.MapDelete("/api/books/{id}", (int id) => {
+    return Results.Ok($"Você está na rota de deleção do livro de id {id}");
+});
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
