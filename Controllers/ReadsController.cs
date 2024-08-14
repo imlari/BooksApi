@@ -1,9 +1,10 @@
 using BooksAPI.Data;
+using BooksAPI.DTOs;
 using BooksAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace BooksApi.Controllers
+namespace BooksAPI.Controllers
 {
     [Route("/api/reads")]
     public class ReadsController : Controller
@@ -27,7 +28,23 @@ namespace BooksApi.Controllers
                 return NoContent();
             }
 
-            return Ok(reads);
+           var readDTO = new List<ReadDTO>();
+
+            foreach (var read in reads)
+            {
+                readDTO.Add(new ReadDTO
+                {
+                    id = read.id,
+                    current_page = read.current_page,
+                    books = new BookDTO
+                    {
+                        id = read.book_id,
+                        title = read.book.title,
+                    }
+                });
+            }
+            
+            return Ok(readDTO);
         }
 
         [HttpPost]

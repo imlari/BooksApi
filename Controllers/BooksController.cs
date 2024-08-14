@@ -3,7 +3,7 @@ using BooksAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace BooksApi.Controllers
+namespace BooksAPI.Controllers
 {
     [ApiController]
     [Route("/api/books")]

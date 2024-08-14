@@ -3,7 +3,7 @@ using BooksAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace UsersAPI.Controllers
+namespace BooksAPI.Controllers
 {
     [Route("/api/users")]
     public class UsersController : ControllerBase
