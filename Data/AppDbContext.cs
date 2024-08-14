@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
 using BooksAPI.Models;
-using UsersAPI.Models;
 
 namespace BooksAPI.Data
 {
@@ -13,11 +12,22 @@ namespace BooksAPI.Data
 
         public DbSet<Book> Books { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Read> Reads { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Book>().ToTable("books");
-            modelBuilder.Entity<User>().ToTable("users");
+            modelBuilder.Entity<Book>().ToTable("books")
+                .HasMany(b => b.Reads)
+                .WithOne(r => r.book)
+                .HasForeignKey(r => r.book_id);
+            modelBuilder.Entity<User>().ToTable("users")
+                .HasMany(u => u.Reads)
+                .WithOne(r => r.user)
+                .HasForeignKey(r => r.user_id);
+            modelBuilder.Entity<Read>().ToTable("reads")
+                .HasOne(r => r.book)
+                .WithMany(b => b.Reads)
+                .HasForeignKey(r => r.book_id);
         }
     }
 }

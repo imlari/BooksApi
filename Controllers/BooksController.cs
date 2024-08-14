@@ -56,7 +56,7 @@ namespace BooksApi.Controllers
         [Consumes("application/json")]
         public async Task<ActionResult> GetBookByTitle([FromBody] string title)
         {
-            var book = await _dbContext.Books.FirstOrDefaultAsync(b => b.Title == title);
+            var book = await _dbContext.Books.FirstOrDefaultAsync(b => b.title == title);
 
             if (book == null)
             {
@@ -69,7 +69,7 @@ namespace BooksApi.Controllers
         [HttpPost("filter")]
         public async Task<ActionResult<IEnumerable<Book>>> GetBooksByFilter(Book book)
         {
-            var books = await _dbContext.Books.Where(b => b.Title == book.Title || b.Author == book.Author).ToListAsync();
+            var books = await _dbContext.Books.Where(b => b.title == book.title || b.author == book.author).ToListAsync();
 
             if (books.Count == 0)
             {
@@ -89,8 +89,8 @@ namespace BooksApi.Controllers
                 return NotFound("O livro não foi encontrado");
             }
 
-            bookToUpdate.Title = book.Title;
-            bookToUpdate.Author = book.Author;
+            bookToUpdate.title = book.title;
+            bookToUpdate.author = book.author;
 
             await _dbContext.SaveChangesAsync();
 
@@ -101,7 +101,7 @@ namespace BooksApi.Controllers
         [Consumes("application/json")]
         public async Task<ActionResult<IEnumerable<Book>>> GetBooksByAuthor([FromBody] string author)
         {
-            var books = await _dbContext.Books.Where(b => b.Author == author).ToListAsync();
+            var books = await _dbContext.Books.Where(b => b.author == author).ToListAsync();
 
             if (books.Count == 0)
             {

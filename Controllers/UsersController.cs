@@ -1,5 +1,5 @@
 using BooksAPI.Data;
-using UsersAPI.Models;
+using BooksAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -55,7 +55,7 @@ namespace UsersAPI.Controllers
         [Consumes("application/json")]
         public async Task<ActionResult> GetUserByEmail([FromBody] string email)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.email == email);
 
             if (user == null)
             {
@@ -91,9 +91,9 @@ namespace UsersAPI.Controllers
                 return NotFound("O usuário não foi encontrado");
             }
 
-            userToUpdate.Name = user.Name;
-            userToUpdate.Email = user.Email;
-            userToUpdate.Password = user.Password;
+            userToUpdate.name = user.name;
+            userToUpdate.email = user.email;
+            userToUpdate.password = user.password;
 
             await _dbContext.SaveChangesAsync();
 
@@ -105,7 +105,7 @@ namespace UsersAPI.Controllers
       
         public async Task<ActionResult> Login([FromBody] UserLogin userLogin)
         {
-            var userToLogin = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == userLogin.email && u.Password == userLogin.password);
+            var userToLogin = await _dbContext.Users.FirstOrDefaultAsync(u => u.email == userLogin.email && u.password == userLogin.password);
 
             if (userToLogin == null)
             {
