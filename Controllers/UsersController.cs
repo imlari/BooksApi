@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+using BooksAPI.Data;
+using UsersAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
-namespace BooksApi.Controllers
+namespace UsersAPI.Controllers
 {
     [Route("/api/users")]
     public class UsersController : ControllerBase
@@ -19,5 +16,103 @@ namespace BooksApi.Controllers
         }
 
         [HttpGet]
+        public async Task<ActionResult> GetAll()
+        {
+            var users = await _dbContext.Users.ToListAsync();
+
+            if (users.Count == 0)
+            {
+                return NoContent();
+            }
+
+            return Ok(users);
+        }
+
+        [HttpPost]
+        [Consumes("application/json")]
+        public async Task<ActionResult> Create([FromBody] User user)
+        {
+            _dbContext.Users.Add(user);
+            await _dbContext.SaveChangesAsync();
+
+            return Created("Created", user);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<User>> GetUser(int id)
+        {
+            var user = await _dbContext.Users.FindAsync(id);
+
+            if (user == null)
+            {
+                return NotFound("O usuário não foi encontrado");
+            }
+
+            return Ok(user);
+        }
+
+        [HttpPost("email")]
+        [Consumes("application/json")]
+        public async Task<ActionResult> GetUserByEmail([FromBody] string email)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+            {
+                return NotFound("O usuário não foi encontrado pelo email");
+            }
+
+            return Ok(user);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var user = await _dbContext.Users.FindAsync(id);
+
+            if (user == null)
+            {
+                return NotFound("O usuário não foi encontrado");
+            }
+
+            _dbContext.Users.Remove(user);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Usuário removido");
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Update(int id, [FromBody] User user)
+        {
+            var userToUpdate = await _dbContext.Users.FindAsync(id);
+
+            if (userToUpdate == null)
+            {
+                return NotFound("O usuário não foi encontrado");
+            }
+
+            userToUpdate.Name = user.Name;
+            userToUpdate.Email = user.Email;
+            userToUpdate.Password = user.Password;
+
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Usuário atualizado");
+        }
+
+        [HttpPost("login")]
+        [Consumes("application/json")]
+      
+        public async Task<ActionResult> Login([FromBody] UserLogin userLogin)
+        {
+            var userToLogin = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == userLogin.email && u.Password == userLogin.password);
+
+            if (userToLogin == null)
+            {
+                return NotFound("Usuário não encontrado");
+            }
+
+            return Ok("Usuário logado");
+        }
     }
 }

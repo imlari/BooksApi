@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using BooksAPI.Models;
+using UsersAPI.Models;
 
 namespace BooksAPI.Data
 {

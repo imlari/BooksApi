@@ -53,18 +53,19 @@ namespace BooksApi.Controllers
         }
 
         [HttpPost("title")]
-        public async Task<ActionResult<Book>> GetBookByTitle(string title)
+        [Consumes("application/json")]
+        public async Task<ActionResult> GetBookByTitle([FromBody] string title)
         {
             var book = await _dbContext.Books.FirstOrDefaultAsync(b => b.Title == title);
 
             if (book == null)
             {
-                return NotFound($"O livro '{title}' não foi encontrado");
+                return NotFound("O livro não foi encontrado");
             }
 
             return Ok(book);
         }
-
+        
         [HttpPost("filter")]
         public async Task<ActionResult<IEnumerable<Book>>> GetBooksByFilter(Book book)
         {
@@ -94,6 +95,20 @@ namespace BooksApi.Controllers
             await _dbContext.SaveChangesAsync();
 
             return Ok(bookToUpdate);
+        }
+
+        [HttpPost("author")]
+        [Consumes("application/json")]
+        public async Task<ActionResult<IEnumerable<Book>>> GetBooksByAuthor([FromBody] string author)
+        {
+            var books = await _dbContext.Books.Where(b => b.Author == author).ToListAsync();
+
+            if (books.Count == 0)
+            {
+                return NotFound($"Nenhum livro foi encontrado");
+            }
+
+            return Ok(books);
         }
 
         [HttpDelete("{id}")]
