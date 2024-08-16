@@ -18,7 +18,7 @@ namespace BooksAPI.Controllers
         [HttpGet]
         public async Task<ActionResult> GetAll()
         {
-            var users = await _dbContext.Users.ToListAsync();
+            var users = await _dbContext.Users.OrderBy(u => u.id).ToListAsync();
 
             if (users.Count == 0)
             {
@@ -30,9 +30,14 @@ namespace BooksAPI.Controllers
 
         [HttpPost]
         [Consumes("application/json")]
-        public async Task<ActionResult> Create([FromBody] User user)
+        public async Task<ActionResult> Create([FromBody] CreateUserDTO user)
         {
-            _dbContext.Users.Add(user);
+            _dbContext.Users.Add(new User
+            {
+                name = user.name,
+                email = user.email,
+                password = user.password
+            });
             await _dbContext.SaveChangesAsync();
 
             return Created("Created", user);
@@ -53,9 +58,9 @@ namespace BooksAPI.Controllers
 
         [HttpPost("email")]
         [Consumes("application/json")]
-        public async Task<ActionResult> GetUserByEmail([FromBody] string email)
+        public async Task<ActionResult> GetUserByEmail([FromBody] UserEmailDTO userEmail)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.email == email);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.email == userEmail.email);
 
             if (user == null)
             {
@@ -66,9 +71,9 @@ namespace BooksAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
+        public async Task<ActionResult> Delete(DeleteUserByIdDTO userToDelete)
         {
-            var user = await _dbContext.Users.FindAsync(id);
+            var user = await _dbContext.Users.FindAsync(userToDelete.id);
 
             if (user == null)
             {
@@ -82,7 +87,7 @@ namespace BooksAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, [FromBody] User user)
+        public async Task<ActionResult> Update(int id, [FromBody] UpdateUserDTO user)
         {
             var userToUpdate = await _dbContext.Users.FindAsync(id);
 
@@ -91,9 +96,32 @@ namespace BooksAPI.Controllers
                 return NotFound("O usuário não foi encontrado");
             }
 
-            userToUpdate.name = user.name;
-            userToUpdate.email = user.email;
-            userToUpdate.password = user.password;
+            if (user.name == null && user.email == null && user.password == null)
+            {
+                return BadRequest("Nenhum dado foi informado para atualização");
+            }
+
+            if (user.name != null)
+            {
+                userToUpdate.name = user.name;
+            }
+
+            if (user.email != null)
+            {
+                userToUpdate.email = user.email;
+            }
+
+            if (user.password != null)
+            {
+                userToUpdate.password = user.password;
+            }
+
+            var userWithSameEmail = await _dbContext.Users.FirstOrDefaultAsync(u => u.email == user.email);
+
+            if (userWithSameEmail != null)
+            {
+                return BadRequest("Já existe um usuário com esse email");
+            }
 
             await _dbContext.SaveChangesAsync();
 
@@ -103,7 +131,7 @@ namespace BooksAPI.Controllers
         [HttpPost("login")]
         [Consumes("application/json")]
       
-        public async Task<ActionResult> Login([FromBody] UserLogin userLogin)
+        public async Task<ActionResult> Login([FromBody] UserLoginDTO userLogin)
         {
             var userToLogin = await _dbContext.Users.FirstOrDefaultAsync(u => u.email == userLogin.email && u.password == userLogin.password);
 
