@@ -1,5 +1,6 @@
 using BooksAPI.Data;
 using BooksAPI.Models;
+using BooksAPI.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,12 +32,18 @@ namespace BooksAPI.Controllers
 
         [HttpPost]
         [Consumes("application/json")]
-        public async Task<ActionResult> Create([FromBody] Book book)
+        public async Task<ActionResult> Create([FromBody] BookDTO book)
         {
-            _dbContext.Books.Add(book);
+            var newBook = new Book
+            {
+                title = book.title,
+                author = book.author
+            };
+
+            _dbContext.Books.Add(newBook);
             await _dbContext.SaveChangesAsync();
 
-            return Created("Created", book);
+            return Created("Created", newBook);
         }
 
         [HttpGet("{id}")]
@@ -54,9 +61,9 @@ namespace BooksAPI.Controllers
 
         [HttpPost("search-by-title")]
         [Consumes("application/json")]
-        public async Task<ActionResult> GetBookByTitle([FromBody] string title)
+        public async Task<ActionResult> GetBookByTitle([FromBody] SearchByTitleDTO titleToSearch)
         {
-            var book = await _dbContext.Books.FirstOrDefaultAsync(b => b.title == title);
+            var book = await _dbContext.Books.FirstOrDefaultAsync(b => b.title == titleToSearch.title);
 
             if (book == null)
             {
@@ -64,19 +71,6 @@ namespace BooksAPI.Controllers
             }
 
             return Ok(book);
-        }
-        
-        [HttpPost("filter")]
-        public async Task<ActionResult<IEnumerable<Book>>> GetBooksByFilter(Book book)
-        {
-            var books = await _dbContext.Books.Where(b => b.title == book.title || b.author == book.author).ToListAsync();
-
-            if (books.Count == 0)
-            {
-                return NotFound($"Nenhum livro foi encontrado");
-            }
-
-            return Ok(books);
         }
 
         [HttpPut("{id}")]
@@ -106,13 +100,13 @@ namespace BooksAPI.Controllers
 
         [HttpPost("search-by-author")]
         [Consumes("application/json")]
-        public async Task<ActionResult<IEnumerable<Book>>> GetBooksByAuthor([FromBody] string author)
+        public async Task<ActionResult<IEnumerable<Book>>> GetBooksByAuthor([FromBody] SearchByAuthorDTO authorToSearch)
         {
-            var books = await _dbContext.Books.Where(b => b.author == author).ToListAsync();
+            var books = await _dbContext.Books.Where(b => b.author == authorToSearch.author).ToListAsync();
 
             if (books.Count == 0)
             {
-                return NotFound($"Nenhum livro foi encontrado");
+                return NotFound("Nenhum livro foi encontrado");
             }
 
             return Ok(books);

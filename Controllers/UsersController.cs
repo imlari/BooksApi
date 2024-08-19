@@ -1,5 +1,6 @@
 using BooksAPI.Data;
 using BooksAPI.Models;
+using BooksAPI.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
